@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Route requests matching /workflow/{id}/start to workflow.php
+RewriteCond %{REQUEST_URI} ^/hackathon/workflow/workflow/([0-9]+)/start$ [NC]
+RewriteRule ^hackathon/workflow/workflow/([0-9]+)/start$ workflow.php [L]
