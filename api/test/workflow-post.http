@@ -1,0 +1,8 @@
+POST https://localhost/hackathon/workflow/api/workflow.php HTTP/1.1
+content-type: application/json
+
+{
+    "name": "New Sample Workflow",
+    "description": "This is a sample workflow",
+    "created_by": "WilliamCairns"
+}

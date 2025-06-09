@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #555;
+        }
+        p {
+            line-height: 1.6;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Workflow API Documentation</h1>
+
+    <h2>API Endpoints</h2>
+
+    <h3>1. <code>run.php</code></h3>
+    <p>
+        This script retrieves a specific workflow run by its ID.
+    </p>
+    <p><strong>Endpoint:</strong> <code>/api/run.php?id={id}</code></p>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+        <li><code>id</code> (integer): The ID of the workflow run to fetch.</li>
+    </ul>
+    <p><strong>Response:</strong></p>
+    <ul>
+        <li><code>200</code>: JSON object containing the workflow run details.</li>
+        <li><code>400</code>: Missing <code>id</code> parameter.</li>
+        <li><code>404</code>: Workflow run not found.</li>
+        <li><code>500</code>: Internal server error.</li>
+    </ul>
+
+    <h3>2. <code>runs.php</code></h3>
+    <p>
+        This script retrieves all workflow runs for a specific workflow ID.
+    </p>
+    <p><strong>Endpoint:</strong> <code>/api/runs.php?id={workflow_id}</code></p>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+        <li><code>id</code> (integer): The ID of the workflow to fetch runs for.</li>
+    </ul>
+    <p><strong>Response:</strong></p>
+    <ul>
+        <li><code>200</code>: JSON array containing workflow runs.</li>
+        <li><code>400</code>: Missing <code>id</code> parameter.</li>
+        <li><code>404</code>: No workflow runs found.</li>
+        <li><code>500</code>: Internal server error.</li>
+    </ul>
+
+    <h3>3. <code>user_workflows.php</code></h3>
+    <p>
+        This script retrieves all workflows owned by a specific user.
+    </p>
+    <p><strong>Endpoint:</strong> <code>/api/user_workflows.php?id={user_id}</code></p>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+        <li><code>id</code> (integer): The ID of the user to fetch workflows for.</li>
+    </ul>
+    <p><strong>Response:</strong></p>
+    <ul>
+        <li><code>200</code>: JSON array containing user workflows.</li>
+        <li><code>400</code>: Missing <code>id</code> parameter.</li>
+        <li><code>404</code>: No workflows found.</li>
+        <li><code>500</code>: Internal server error.</li>
+    </ul>
+
+    <h3>4. <code>workflow.php</code></h3>
+    <p>
+        This script retrieves detailed information about a specific workflow, including its nodes and edges.
+    </p>
+    <p><strong>Endpoint:</strong> <code>/api/workflow.php?id={workflow_id}</code></p>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+        <li><code>id</code> (integer): The ID of the workflow to fetch.</li>
+    </ul>
+    <p><strong>Response:</strong></p>
+    <ul>
+        <li><code>200</code>: JSON object containing workflow details, nodes, and edges.</li>
+        <li><code>400</code>: Missing <code>id</code> parameter.</li>
+        <li><code>404</code>: Workflow not found.</li>
+        <li><code>500</code>: Internal server error.</li>
+    </ul>
+
+    <h2>Usage</h2>
+    <p>
+        To use these scripts, make HTTP GET requests to the specified endpoints with the required parameters.
+    </p>
+    <p>
+        Example using <code>curl</code>:
+    </p>
+    <pre><code>curl "http://localhost/hackathon/workflow/api/run.php?id=1"</code></pre>
+</body>
+</html>

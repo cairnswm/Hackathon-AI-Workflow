@@ -3,7 +3,7 @@ CREATE TABLE workflows (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
     description TEXT,
-    created_by INT, -- Optional: ID of the creator
+    created_by varchar(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -31,7 +31,7 @@ CREATE TABLE workflow_edges (
     workflow_id INT,
     from_node_id INT,
     to_node_id INT,
-    condition TEXT, -- Only used if from_node is a decision node
+    if_condition TEXT, -- Only used if from_node is a decision node
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
