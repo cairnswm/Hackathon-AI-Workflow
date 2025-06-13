@@ -10,7 +10,7 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$id = intval($_GET['id']);
+$id = $_GET['id'];
 
 try {
     // Fetch all workflows a specific user owns

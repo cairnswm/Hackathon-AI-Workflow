@@ -83,18 +83,50 @@
 
     <h3>4. <code>workflow.php</code></h3>
     <p>
-        This script retrieves detailed information about a specific workflow, including its nodes and edges.
+        This script retrieves detailed information about a specific workflow, including its nodes and edges, allows creating new workflows, and updating existing workflows.
     </p>
-    <p><strong>Endpoint:</strong> <code>/api/workflow.php?id={workflow_id}</code></p>
+    <p><strong>Endpoint:</strong> <code>/api/workflow.php</code></p>
+    <p><strong>Methods:</strong></p>
+    <ul>
+        <li><code>GET</code>: Retrieve detailed information about a specific workflow, including its nodes and edges.</li>
+        <li><code>POST</code>: Create a new workflow.</li>
+        <li><code>PUT</code>: Update an existing workflow.</li>
+    </ul>
     <p><strong>Parameters:</strong></p>
     <ul>
-        <li><code>id</code> (integer): The ID of the workflow to fetch.</li>
+        <li><code>GET</code>: <code>id</code> (integer): The ID of the workflow to fetch.</li>
+        <li><code>POST</code>: JSON object with <code>name</code> (string) and <code>description</code> (string).</li>
+        <li><code>PUT</code>: JSON object with <code>id</code> (integer) and fields to update.</li>
     </ul>
     <p><strong>Response:</strong></p>
     <ul>
-        <li><code>200</code>: JSON object containing workflow details, nodes, and edges.</li>
-        <li><code>400</code>: Missing <code>id</code> parameter.</li>
-        <li><code>404</code>: Workflow not found.</li>
+        <li><code>200</code>: JSON object containing workflow details, nodes, and edges (GET), or success message (PUT).</li>
+        <li><code>201</code>: Workflow created successfully (POST).</li>
+        <li><code>400</code>: Missing or invalid parameters.</li>
+        <li><code>404</code>: Workflow not found (GET).</li>
+        <li><code>500</code>: Internal server error.</li>
+    </ul>
+
+    <h3>5. <code>token.php</code></h3>
+    <p>
+        This script handles token creation and retrieval.
+    </p>
+    <p><strong>Endpoint:</strong> <code>/api/token.php</code></p>
+    <p><strong>Methods:</strong></p>
+    <ul>
+        <li><code>POST</code>: Create a new token.</li>
+        <li><code>GET</code>: Retrieve token details.</li>
+    </ul>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+        <li><code>POST</code>: JSON object with <code>user_id</code> (string), <code>workflow_id</code> (string), and optionally <code>run_id</code> (string).</li>
+        <li><code>GET</code>: <code>token</code> (string): The token to fetch details for.</li>
+    </ul>
+    <p><strong>Response:</strong></p>
+    <ul>
+        <li><code>200</code>: JSON object containing token details (GET) or the generated token (POST).</li>
+        <li><code>400</code>: Missing or invalid parameters.</li>
+        <li><code>404</code>: Token not found (GET).</li>
         <li><code>500</code>: Internal server error.</li>
     </ul>
 

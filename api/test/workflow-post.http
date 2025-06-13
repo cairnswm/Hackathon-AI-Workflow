@@ -1,4 +1,4 @@
-POST https://localhost/hackathon/workflow/api/workflow.php HTTP/1.1
+POST https://aiworkflow.cairns.co.za/api/workflow.php HTTP/1.1
 content-type: application/json
 
 {

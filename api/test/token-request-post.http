@@ -1,0 +1,9 @@
+### Create a new token
+POST http://localhost/hackathon/workflow/api/token.php
+Content-Type: application/json
+
+{
+  "user_id": "12345",
+  "workflow_id": "67890",
+  "run_id": "11111"
+}
