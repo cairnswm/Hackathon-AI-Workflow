@@ -17,8 +17,7 @@ CREATE TABLE workflow_nodes (
     type VARCHAR(50), -- e.g., start, end, api_call, decision, etc.
     name VARCHAR(255),
     config TEXT, -- JSON string for node-specific configuration
-    x INT, -- Optional: position on canvas (for UI)
-    y INT,
+    display TEXT, -- JSON string for display properties
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

@@ -29,6 +29,13 @@ class WorkflowEngine
   public function start($workflowId, $inputData)
   {
     $this->workflowdata = $inputData;
+
+    $this->globaldata = [
+        'api_key' => 'your-api-key-here',
+        'user_id' => 12345,
+        'workflow_name' => 'Example Workflow'
+    ];
+
     // Insert new workflow run using insertRecord
     $inputJson = json_encode($inputData);
     $status = 'running';
@@ -146,6 +153,12 @@ class WorkflowEngine
       } elseif ($nodeType === 'if') {
         require_once __DIR__ . '/../nodes/ifnode.php';
         $workflowNode = new IfNode($nodeId, $nodeType);
+      } elseif ($nodeType === 'llm') {
+        require_once __DIR__ . '/../nodes/llmnode.php';
+        $workflowNode = new LLMNode($nodeId, $nodeType);
+      } elseif ($nodeType === 'api') {
+        require_once __DIR__ . '/../nodes/apinode.php';
+        $workflowNode = new APINode($nodeId, $nodeType);
       } else {
         $workflowNode = new WorkflowNode($nodeId, $nodeType);
       }

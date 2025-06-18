@@ -1,0 +1,30 @@
+POST https://localhost/hackathon/workflow/api/save.php HTTP/1.1
+content-type: application/json
+
+{
+    "id": 2,
+    "nodes": [
+      {
+        "id": "X001",
+        "name": null,
+        "type": "start",
+        "config": "{}",
+        "display": "{}"
+      },
+      {
+        "id": "X002",
+        "name": null,
+        "type": "end",
+        "config": "{}",
+        "display": "{}"
+      }
+    ],
+    "edges": [
+      {
+        "id": "E001",
+        "from_node_id": "X001",
+        "to_node_id": "X002",
+        "if_condition": null
+      }
+    ]
+  }

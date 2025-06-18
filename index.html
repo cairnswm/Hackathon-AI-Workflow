@@ -130,6 +130,71 @@
         <li><code>500</code>: Internal server error.</li>
     </ul>
 
+    <h3>6. <code>save.php</code></h3>
+    <p>
+        This script updates workflow nodes and edges based on the provided JSON input.
+    </p>
+    <p><strong>Endpoint:</strong> <code>/api/save.php</code></p>
+    <p><strong>Methods:</strong></p>
+    <ul>
+        <li><code>POST</code>: Update workflow nodes and edges.</li>
+    </ul>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+        <li><code>id</code> (integer): The ID of the workflow to update.</li>
+        <li><code>nodes</code> (array): Array of node objects, each containing <code>id</code>, <code>type</code>, <code>name</code>, <code>config</code>, and <code>display</code>.</li>
+        <li><code>edges</code> (array): Array of edge objects, each containing <code>id</code>, <code>from_node_id</code>, <code>to_node_id</code>, and <code>if_condition</code>.</li>
+    </ul>
+    <p><strong>Example Request:</strong></p>
+    <pre><code>POST https://localhost/hackathon/workflow/api/save.php HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 2,
+    "nodes": [
+        {
+            "id": "X001",
+            "name": "Start Node",
+            "type": "start",
+            "config": "{}",
+            "display": "{}"
+        },
+        {
+            "id": "X002",
+            "name": "End Node",
+            "type": "end",
+            "config": "{}",
+            "display": "{}"
+        }
+    ],
+    "edges": [
+        {
+            "id": "E001",
+            "from_node_id": "X001",
+            "to_node_id": "X002",
+            "if_condition": null
+        }
+    ]
+}</code></pre>
+    <p><strong>Response:</strong></p>
+    <ul>
+        <li><code>200</code>: Workflow nodes and edges updated successfully.</li>
+        <li><code>400</code>: Missing or invalid parameters.</li>
+        <li><code>500</code>: Internal server error.</li>
+    </ul>
+
+    <h2>Node Structure</h2>
+    <p>
+        Nodes are represented as JSON objects with the following fields:
+    </p>
+    <ul>
+        <li><code>id</code>: Unique identifier for the node.</li>
+        <li><code>type</code>: Type of the node (e.g., <code>start</code>, <code>end</code>, <code>api</code>, etc.).</li>
+        <li><code>name</code>: Name of the node.</li>
+        <li><code>config</code>: JSON object containing configuration details for the node.</li>
+        <li><code>display</code>: JSON object containing UI display properties for the node.</li>
+    </ul>
+
     <h2>Usage</h2>
     <p>
         To use these scripts, make HTTP GET requests to the specified endpoints with the required parameters.

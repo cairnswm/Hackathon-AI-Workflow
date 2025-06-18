@@ -101,3 +101,24 @@ function deleteRecord($query, $params) {
 function fetchRecord($query, $params) {
     return executeSQL($query, $params, true);
 }
+
+function beginTransaction() {
+    global $mysqli;
+    if (!$mysqli->begin_transaction()) {
+        throw new Exception("Failed to start transaction");
+    }
+}
+
+function commitTransaction() {
+    global $mysqli;
+    if (!$mysqli->commit()) {
+        throw new Exception("Failed to commit transaction");
+    }
+}
+
+function rollbackTransaction() {
+    global $mysqli;
+    if (!$mysqli->rollback()) {
+        throw new Exception("Failed to rollback transaction");
+    }
+}

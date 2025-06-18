@@ -1,2 +1,2 @@
 ### Get token details
-GET http://localhost/hackathon/workflow/api/token.php?token=27c346f8580b224beabdc2f157367305
+GET http://aiworkflow.cairns.co.za/api/token.php?token=27c346f8580b224beabdc2f157367305

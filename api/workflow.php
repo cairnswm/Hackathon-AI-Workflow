@@ -44,8 +44,7 @@ function handleGetWorkflow() {
                     'name', n.name,
                     'type', n.type,
                     'config', n.config,
-                    'x', n.x,
-                    'y', n.y
+                    'display', n.display
                   )
                 )
                 FROM workflow_nodes n
@@ -87,6 +86,17 @@ function handleGetWorkflow() {
             foreach ($workflows as &$wf) {
                 $wf['nodes'] = json_decode($wf['nodes'], true);
                 $wf['edges'] = json_decode($wf['edges'], true);
+
+                if (is_array($wf['nodes'])) {
+                    foreach ($wf['nodes'] as &$node) {
+                        if (isset($node['config']) && is_string($node['config'])) {
+                            $node['config'] = json_decode($node['config'], true);
+                        }
+                        if (isset($node['display']) && is_string($node['display'])) {
+                            $node['display'] = json_decode($node['display'], true);
+                        }
+                    }
+                }
             }
 
             echo json_encode(is_assoc($workflow) ? $workflows[0] : $workflows);
