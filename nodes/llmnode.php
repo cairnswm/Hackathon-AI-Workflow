@@ -9,15 +9,23 @@ class LLMNode extends WorkflowNode
             throw new Exception("Missing 'prompt' configuration for LLMNode.");
         }
 
+        if (!isset($this->nodeconfig['format'])) {
+            throw new Exception("Missing 'format' configuration for LLMNode.");
+        }
+
         $prompt = $this->nodeconfig['prompt'];
-        $model = $this->nodeconfig['model'] ?? 'text-davinci-003'; // Default model
+        $format = $this->nodeconfig['format'];
+        $model = $this->nodeconfig['model'] ?? 'gpt-4.1-nano'; // Default model
         $config = $this->nodeconfig['config'] ?? [
             'temperature' => 0.7,
             'max_tokens' => 100
         ];
 
+        // Append format instructions to the prompt
+        $formattedPrompt = $prompt . "\n\nPlease respond only in the following JSON format: " . $format;
+
         // Call the OpenAI API
-        $response = $this->callOpenAI($prompt, $model, $config);
+        $response = $this->callOpenAI($formattedPrompt, $model, $config);
 
         if ($response['status'] !== 'ok') {
             throw new Exception("Error calling OpenAI API: " . $response['error']);
