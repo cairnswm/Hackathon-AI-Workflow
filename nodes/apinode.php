@@ -5,8 +5,12 @@ class APINode extends WorkflowNode
 {
     protected function execute()
     {
-        if (!isset($this->nodeconfig['endpoint']) || !isset($this->nodeconfig['method'])) {
-            throw new Exception("Missing 'endpoint' or 'method' configuration for APINode.");
+        if (!isset($this->nodeconfig['endpoint'])) {
+            var_dump("NODE CONFIG:", $this->nodeconfig);
+            throw new Exception("Missing 'endpoint' configuration for APINode.");
+        }
+        if (!isset($this->nodeconfig['method'])) {
+            $this->nodeconfig['method'] = 'GET';
         }
 
         $endpoint = $this->nodeconfig['endpoint'];
