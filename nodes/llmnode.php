@@ -38,8 +38,8 @@ class LLMNode extends WorkflowNode
         }
 
         // Store the LLM output in workflowdata
-        $this->workflowdata['ai_output'] = $response['data']['output'];
-        $this->workflowdata['ai_value'] = json_decode($response['data']['output']);
+        $fieldName = $this->nodeconfig['field'] ?? 'ai_value';
+        $this->workflowdata[$fieldName] = json_decode($response['data']['output']);
 
         $this->status = "ok";
     }

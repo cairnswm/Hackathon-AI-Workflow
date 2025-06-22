@@ -43,12 +43,13 @@ The system resolves these placeholders by traversing the nested structure of the
 
 ## LLMNode
 
-### Updated Configuration
+### Configuration
 
 - **prompt** (string, required): The prompt to send to the language model.
 - **format** (string, required): Specifies the JSON format for the response. The prompt will include instructions to format the output as valid JSON.
 - **action** (string, optional): Additional instructions or context for the language model.
 - **model** (string, optional): The model to use (default: `gpt-4.1-mini`).
+- **field** (string, optional): The field to store the result in - else ai_value will be used
 - **config** (array, optional): Configuration for the model, including:
   - **temperature** (float, default: `0.7`): Controls randomness.
   - **max_tokens** (integer, default: `100`): Maximum number of tokens to generate.
