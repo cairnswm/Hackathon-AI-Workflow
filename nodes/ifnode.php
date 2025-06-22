@@ -20,13 +20,7 @@ class IfNode extends WorkflowNode
 
       if (isset($edge['if_condition'])) {
         // Add the complete field at the start of the conditional
-        $condition = $fieldname . $edge['if_condition'];
-
-        // Replace {<fieldname>} with the corresponding value from workflowdata
-        $condition = preg_replace_callback('/\{(.*?)\}/', function ($matches) {
-          $fieldKey = $matches[1];
-          return $this->workflowdata[$fieldKey] ?? null;
-        }, $condition);
+        $condition = $this->replaceTemplateValues($fieldname . $edge['if_condition']);
 
         $res = (evaluateCondition($condition, $this->workflowdata));
         if ($res) {

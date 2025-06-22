@@ -29,6 +29,8 @@ class WorkflowNode
         $this->localdata = $localdata;
         $this->workflowdata = $workflowdata;
 
+        var_dump("WFN: RUN Global Data", $this->globaldata);
+
         $this->start();
 
         $this->execute();
@@ -54,6 +56,8 @@ class WorkflowNode
             throw new Exception("Missing required configuration data.");
         }
 
+        var_dump("Start, global data", $this->globaldata);
+
         // Allow child classes to extend this method with additional validation or setup
     }
 
@@ -71,5 +75,33 @@ class WorkflowNode
             "localdata" => $this->localdata,
             "workflowdata" => $this->workflowdata,
         ];
+    }
+    protected function replaceTemplateValues($text)
+    {
+        return preg_replace_callback('/\{(.*?)\}/', function ($matches) {
+            $fieldKey = $matches[1];
+
+            // Check for deep linking in localdata
+            if (str_starts_with($fieldKey, 'data.')) {
+                $fieldKey = substr($fieldKey, 5); // Remove 'data.' prefix
+                return $this->getNestedValue($this->localdata, $fieldKey);
+            }
+
+            // Default to workflowdata
+            return $this->getNestedValue($this->workflowdata, $fieldKey);
+        }, $text);
+    }
+
+    private function getNestedValue($data, $key)
+    {
+        $keys = explode('.', $key);
+        foreach ($keys as $k) {
+            if (is_array($data) && array_key_exists($k, $data)) {
+                $data = $data[$k];
+            } else {
+                return null; // Key not found
+            }
+        }
+        return $data;
     }
 }

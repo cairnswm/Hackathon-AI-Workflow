@@ -13,7 +13,8 @@ class WorkflowEngine
   protected $callbacks;
   protected $runqueue = [];
 
-  public function __construct($id) {
+  public function __construct($id)
+  {
     $this->nodeconfig = [
       'workflow_id' => $id,
     ];
@@ -31,10 +32,18 @@ class WorkflowEngine
     $this->workflowdata = $inputData;
 
     $this->globaldata = [
-        'api_key' => 'your-api-key-here',
-        'user_id' => 12345,
-        'workflow_name' => 'Example Workflow'
+      'user_id' => 12345,
+      'workflow_name' => 'Example Workflow'
     ];
+
+    foreach (getallheaders() as $headerName => $headerValue) {
+      if (strpos($headerName, 'aiw-') === 0) {
+        $key = str_replace('aiw-', '', $headerName); // Remove 'aiw-' prefix
+        $this->globaldata[$key] = $headerValue; // Add to global data
+      }
+    }
+
+    var_dump("WFE START: Global Data", $this->globaldata);
 
     // Insert new workflow run using insertRecord
     $inputJson = json_encode($inputData);
@@ -58,7 +67,7 @@ class WorkflowEngine
       throw new Exception("Invalid workflow run structure: " . json_encode($workflowRun));
     }
 
-    $this->globaldata = $inputData;
+    // $this->globaldata = $inputData;
 
     $rows = executeSQL(
       "SELECT id, type, config FROM workflow_nodes WHERE workflow_id = ?",
@@ -129,9 +138,10 @@ class WorkflowEngine
 
   public function run()
   {
+    var_dump("WFE RUN: Global Data", $this->globaldata);
     $workflowStatus = "running";
     while (!empty($this->runqueue)) {
-      
+
       $microtimeStart = microtime(true);
       $currentNode = array_shift($this->runqueue);
       $nodeId = $currentNode['nextnode'];
@@ -181,14 +191,14 @@ class WorkflowEngine
       }
 
       // Update protected fields with latest data
-      if (isset($result['localdata'])) {        
+      if (isset($result['localdata'])) {
         $this->localdata[$nodeId] = array_merge($this->localdata[$nodeId], $result['localdata']);
       }
       if (isset($result['workflowdata'])) {
         $this->workflowdata = $result['workflowdata'];
       }
 
-    
+
       // If node signals end, stop processing
       if (isset($result['status']) && $result['status'] === 'end') {
         $workflowStatus = "done";
@@ -227,8 +237,8 @@ class WorkflowEngine
         'localdata' => $this->localdata,
         'workflowdata' => $this->workflowdata,
         'execution_time_ms' => $executionTimeMs,
-        'started_at' => date('Y-m-d H:i:s', (int)$microtimeStart) . sprintf('.%03d', ($microtimeStart - floor($microtimeStart)) * 1000),
-        'ended_at' => date('Y-m-d H:i:s', (int)$microtimeEnd) . sprintf('.%03d', ($microtimeEnd - floor($microtimeEnd)) * 1000),
+        'started_at' => date('Y-m-d H:i:s', (int) $microtimeStart) . sprintf('.%03d', ($microtimeStart - floor($microtimeStart)) * 1000),
+        'ended_at' => date('Y-m-d H:i:s', (int) $microtimeEnd) . sprintf('.%03d', ($microtimeEnd - floor($microtimeEnd)) * 1000),
       ]);
     }
 
@@ -258,7 +268,7 @@ class WorkflowEngine
       "SELECT execution_log FROM workflow_runs WHERE id = ?",
       [$workflowRunId],
       true
-    );    
+    );
 
     $executionLog = is_array($executionLog) && isset($executionLog[0]['execution_log'])
       ? json_decode($executionLog[0]['execution_log'], true)

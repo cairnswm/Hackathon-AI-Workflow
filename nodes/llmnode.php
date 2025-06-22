@@ -5,6 +5,9 @@ class LLMNode extends WorkflowNode
 {
     protected function execute()
     {
+        // var_dump("Node Confgi", $this->nodeconfig);
+        var_dump("Global Data", $this->globaldata);
+
         if (!isset($this->nodeconfig['prompt'])) {
             throw new Exception("Missing 'prompt' configuration for LLMNode.");
         }
@@ -13,19 +16,22 @@ class LLMNode extends WorkflowNode
             throw new Exception("Missing 'format' configuration for LLMNode.");
         }
 
-        $prompt = $this->nodeconfig['prompt'];
-        $format = $this->nodeconfig['format'];
-        $model = $this->nodeconfig['model'] ?? 'gpt-4.1-nano'; // Default model
+        // Replace {<fieldname>} placeholders in prompt, format, and action
+        $prompt = $this->replaceTemplateValues($this->nodeconfig['prompt']);
+        $format = $this->replaceTemplateValues($this->nodeconfig['format']);
+        $action = $this->replaceTemplateValues($this->nodeconfig['action'] ?? '');
+
+        $model = $this->nodeconfig['model'] ?? 'gpt-4.1-mini'; // Default model
         $config = $this->nodeconfig['config'] ?? [
             'temperature' => 0.7,
             'max_tokens' => 100
         ];
 
         // Append format instructions to the prompt
-        $formattedPrompt = $prompt . "\n\nPlease respond only in the following JSON format: " . $format;
+        $formattedPrompt = $prompt . "\n\nPlease format the response as valid json, in the following JSON format: " . $format . ". Do not add any pre or post information. Only the json";
 
         // Call the OpenAI API
-        $response = $this->callOpenAI($formattedPrompt, $model, $config);
+        $response = $this->callOpenAI($formattedPrompt, $model, $config, $action);
 
         if ($response['status'] !== 'ok') {
             throw new Exception("Error calling OpenAI API: " . $response['error']);
@@ -33,21 +39,26 @@ class LLMNode extends WorkflowNode
 
         // Store the LLM output in workflowdata
         $this->workflowdata['ai_output'] = $response['data']['output'];
-        $this->workflowdata['metadata'] = $response['metadata'];
+        $this->workflowdata['ai_value'] = json_decode($response['data']['output']);
 
         $this->status = "ok";
     }
 
-    private function callOpenAI($prompt, $model, $config)
+    private function callOpenAI($prompt, $model, $config, $action)
     {
         $apiKey = $this->getApiKey();
-        $apiUrl = "https://api.openai.com/v1/completions"; // OpenAI API endpoint
+        $apiUrl = "https://api.openai.com/v1/chat/completions"; // Updated OpenAI API endpoint
         $payload = json_encode([
             'model' => $model,
-            'prompt' => $prompt,
+            'messages' => [
+                ['role' => 'system', 'content' => $prompt],
+                ['role' => 'user', 'content' => $action]
+            ],
             'temperature' => $config['temperature'],
             'max_tokens' => $config['max_tokens']
         ]);
+
+        // var_dump($payload);
 
         $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -71,10 +82,11 @@ class LLMNode extends WorkflowNode
 
         $responseData = json_decode($response, true);
 
+        // var_dump("------------- Response Data:\n", $responseData, "\n-------------");
         return [
             'status' => 'ok',
             'data' => [
-                'output' => $responseData['choices'][0]['text'] ?? '',
+                'output' => $responseData['choices'][0]['message']['content'] ?? '',
             ],
             'metadata' => [
                 'model' => $responseData['model'] ?? '',
@@ -86,6 +98,7 @@ class LLMNode extends WorkflowNode
     private function getApiKey()
     {
         if (!isset($this->globaldata['api_key'])) {
+            // var_dump("Global Data:", $this->globaldata);
             throw new Exception("API key not found in global configuration.");
         }
 
