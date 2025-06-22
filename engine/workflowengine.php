@@ -43,7 +43,7 @@ class WorkflowEngine
       }
     }
 
-    var_dump("WFE START: Global Data", $this->globaldata);
+    // var_dump("WFE START: Global Data", $this->globaldata);
 
     // Insert new workflow run using insertRecord
     $inputJson = json_encode($inputData);
@@ -138,7 +138,7 @@ class WorkflowEngine
 
   public function run()
   {
-    var_dump("WFE RUN: Global Data", $this->globaldata);
+    // var_dump("WFE RUN: Global Data", $this->globaldata);
     $workflowStatus = "running";
     while (!empty($this->runqueue)) {
 

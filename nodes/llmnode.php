@@ -6,7 +6,7 @@ class LLMNode extends WorkflowNode
     protected function execute()
     {
         // var_dump("Node Confgi", $this->nodeconfig);
-        var_dump("Global Data", $this->globaldata);
+        // var_dump("Global Data", $this->globaldata);
 
         if (!isset($this->nodeconfig['prompt'])) {
             throw new Exception("Missing 'prompt' configuration for LLMNode.");

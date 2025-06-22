@@ -29,7 +29,7 @@ class WorkflowNode
         $this->localdata = $localdata;
         $this->workflowdata = $workflowdata;
 
-        var_dump("WFN: RUN Global Data", $this->globaldata);
+        // var_dump("WFN: RUN Global Data", $this->globaldata);
 
         $this->start();
 
@@ -56,7 +56,7 @@ class WorkflowNode
             throw new Exception("Missing required configuration data.");
         }
 
-        var_dump("Start, global data", $this->globaldata);
+        // var_dump("Start, global data", $this->globaldata);
 
         // Allow child classes to extend this method with additional validation or setup
     }

@@ -45,7 +45,7 @@ print_r($updatedRecord);
 $query = "DELETE FROM users WHERE id = ?";
 $params = [1];
 $success = deleteRecord($query, $params);
-var_dump($success);
+// var_dump($success);
 ```
 
 ### Notes
