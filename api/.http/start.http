@@ -1,0 +1,6 @@
+### start a workflow
+POST http://localhost/hackathon/workflow/start.php?id=4
+Content-Type: text/plain
+aiw-api_key:
+
+{ "values": { "A": 5, "B": 13} }
