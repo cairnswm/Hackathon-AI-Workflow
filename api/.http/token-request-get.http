@@ -1,2 +1,5 @@
 ### Get token details
-GET http://aiworkflow.cairns.co.za/api/token.php?token=27c346f8580b224beabdc2f157367305
+GET https://aiworkflow.cairns.co.za/api/token.php?token=d6be1f052f042319c74c8042b4402555
+Origin: https://example.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
+Referer: https://example.com/

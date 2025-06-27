@@ -45,5 +45,10 @@ if (!$workflow) {
 
 // Start the workflow engine
 $engine = new WorkflowEngine($workflowId);
-$out = $engine->start($workflowId, $data);
-echo json_encode($out["workflowdata"]);
+try {
+    $out = $engine->start($workflowId, $data);
+    echo json_encode($out["workflowdata"]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(["error" => "Internal Server Error", "details" => $e->getMessage()]);
+}

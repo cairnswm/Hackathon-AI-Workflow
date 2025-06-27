@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../utils/cors.php';
 // Include database connection
 require_once '../utils/executesql.php';
 
@@ -11,6 +12,11 @@ function generateToken() {
 
 // Handle the request method
 $method = $_SERVER['REQUEST_METHOD'];
+
+// Exit early for preflight requests
+if ($method === 'OPTIONS') {
+    exit;
+}
 
 if ($method === 'POST') {
     // Handle POST request to create a new token

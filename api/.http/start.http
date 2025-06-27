@@ -1,5 +1,5 @@
 ### start a workflow
-POST http://localhost/hackathon/workflow/start.php?id=4
+POST http://localhost/hackathon/workflow/api/start.php?id=27
 Content-Type: text/plain
 aiw-api_key:{{openai-api-key}}
 

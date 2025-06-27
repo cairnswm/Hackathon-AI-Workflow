@@ -1,0 +1,67 @@
+POST https://aiworkflow.cairns.co.za/api/save.php HTTP/1.1
+content-type: application/json
+
+{
+  "id": 1,
+  "nodes": [
+    {"id": "69","name": "Go","type": "start","config": {"inputType": "text","description": ""},"display": {"x": 97,
+"y": 110  }},
+    {"id": "70","name": "Get idea","type": "llm","config": {"model": "gpt-4","prompt": "","temperature": 0.7,"maxTokens": 1000},"display": {"x": 250,"y": 239
+      }
+    },
+    {
+      "id": "71",
+      "name": "API",
+      "type": "api",
+      "config": {
+        "method": "GET",
+        "url": "https://api.example.com/endpoint",
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer YOUR_TOKEN"
+        },
+        "body": "",
+        "timeout": 29990,
+        "retries": -12,
+        "responseFormat": "json"
+      },
+      "display": {
+        "x": 402,
+        "y": 315
+      }
+    },
+    {
+      "id": "72",
+      "name": "End",
+      "type": "end",
+      "config": {
+        "outputType": "text",
+        "format": "raw"
+      },
+      "display": {
+        "x": 625,
+        "y": 443
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "E2",
+      "from_node_id": "69",
+      "to_node_id": "70",
+      "if_condition": null
+    },
+    {
+      "id": "E4",
+      "from_node_id": "70",
+      "to_node_id": "71",
+      "if_condition": null
+    },
+    {
+      "id": "E6",
+      "from_node_id": "71",
+      "to_node_id": "72",
+      "if_condition": null
+    }
+  ]
+}

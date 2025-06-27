@@ -59,3 +59,19 @@ The system resolves these placeholders by traversing the nested structure of the
 - The `LLMNode` retrieves the API key from the `globaldata` array under the key `api_key`. If the `api_key` is not set, an exception is thrown with the message "API key not found in global configuration."
 - The `LLMNode` now appends format instructions to the prompt, ensuring the response is structured as valid JSON.
 - The `action` field allows for additional user-defined instructions to be sent to the language model.
+
+## LoopNode
+
+### Configuration
+
+- **while** (string, optional): A condition to evaluate repeatedly.
+
+- **for** (array, optional): Specifies a range with `from` and `to` values.
+
+- **array** (string, optional): A reference to an array in `workflowdata` for iteration.
+
+- **max_iterations** (integer, required): Maximum number of iterations to prevent infinite loops.
+
+### Behavior
+
+The `LoopNode` executes a loop based on the configuration. It tracks the number of iterations and stops if `max_iterations` is reached.

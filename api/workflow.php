@@ -117,8 +117,8 @@ function handleCreateWorkflow() {
     }
 
     try {
-        $query = "INSERT INTO workflows (name, description, created_at, modified_at) VALUES (?, ?, NOW(), NOW())";
-        $workflowId = insertRecord($query, [$data['name'], $data['description']]);
+        $query = "INSERT INTO workflows (name, description, created_by, created_at, modified_at) VALUES (?, ?, ?, NOW(), NOW())";
+        $workflowId = insertRecord($query, [$data['name'], $data['description'], $data['created_by']]);
 
         http_response_code(201);
         echo json_encode(["message" => "Workflow created successfully", "id" => $workflowId]);

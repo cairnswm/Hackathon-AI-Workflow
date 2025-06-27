@@ -1,3 +1,5 @@
 GET https://localhost/hackathon/workflow/api/workflow.php?id=1 HTTP/1.1
 content-type: application/json
-
+Origin: https://example.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
+Referer: https://example.com/

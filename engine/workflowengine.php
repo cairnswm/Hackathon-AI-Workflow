@@ -27,6 +27,19 @@ class WorkflowEngine
     ];
   }
 
+  function logError($message) {
+    $errorMessage = is_array($message) ? json_encode($message) : $message;
+    $logEntry = [
+      'error' => $errorMessage,
+      'timestamp' => date('Y-m-d H:i:s'),
+    ];
+    $this->updateExecutionLog($logEntry);
+    
+    $this->setResult("failed", ['error' => $message]);
+    // Optionally, you can also throw an exception or handle the error further
+    throw new Exception($errorMessage);
+  }
+
   public function start($workflowId, $inputData)
   {
     $this->workflowdata = $inputData;
@@ -96,7 +109,7 @@ class WorkflowEngine
     }
 
     if (empty($this->runqueue)) {
-      throw new Exception("No start node found in workflow ID: $workflowId");
+      $this->logError("No start node found in workflow ID: $workflowId");
     }
 
     $this->workflowedges = executeSQL(
@@ -140,119 +153,148 @@ class WorkflowEngine
   {
     // var_dump("WFE RUN: Global Data", $this->globaldata);
     $workflowStatus = "running";
-    while (!empty($this->runqueue)) {
+    try {
+        while (!empty($this->runqueue)) {
 
-      $microtimeStart = microtime(true);
-      $currentNode = array_shift($this->runqueue);
-      $nodeId = $currentNode['nextnode'];
-      $prevNodeId = $currentNode['prevnode'];
+            $microtimeStart = microtime(true);
+            $currentNode = array_shift($this->runqueue);
+            $nodeId = $currentNode['nextnode'];
+            $prevNodeId = $currentNode['prevnode'];
 
-      if (!isset($this->workflownodes[$nodeId])) {
-        continue;
-      }
+            if (!isset($this->workflownodes[$nodeId])) {
+                continue;
+            }
 
-      $node = $this->workflownodes[$nodeId];
-      $nodeType = $node['type'];
-      $nodeConfig = $node['config'];
-      $nodeConfig['workflow_run_id'] = $this->nodeconfig['workflow_run_id'] ?? null;
-      $nodeConfig['workflow_id'] = $this->nodeconfig['workflow_id'] ?? null;
+            $node = $this->workflownodes[$nodeId];
+            $nodeType = $node['type'];
+            $nodeConfig = $node['config'];
+            $nodeConfig['workflow_run_id'] = $this->nodeconfig['workflow_run_id'] ?? null;
+            $nodeConfig['workflow_id'] = $this->nodeconfig['workflow_id'] ?? null;
 
-      if ($nodeType === 'calculation') {
-        require_once __DIR__ . '/../nodes/calculationnode.php';
-        $workflowNode = new CalculationNode($nodeId, $nodeType);
-      } elseif ($nodeType === 'if') {
-        require_once __DIR__ . '/../nodes/ifnode.php';
-        $workflowNode = new IfNode($nodeId, $nodeType);
-      } elseif ($nodeType === 'llm') {
-        require_once __DIR__ . '/../nodes/llmnode.php';
-        $workflowNode = new LLMNode($nodeId, $nodeType);
-      } elseif ($nodeType === 'api') {
-        require_once __DIR__ . '/../nodes/apinode.php';
-        $workflowNode = new APINode($nodeId, $nodeType);
-      } else {
-        $workflowNode = new WorkflowNode($nodeId, $nodeType);
-      }
-      $result = $workflowNode->run(
-        $nodeConfig,
-        $this->globaldata,
-        $this->callbacks,
-        $this->localdata,
-        $this->workflowdata
-      );
+            if ($nodeType === 'user') {
+                require_once __DIR__ . '/../nodes/usernode.php';
+                $workflowNode = new UserNode($nodeId, $nodeType);
+            } elseif ($nodeType === 'calculation') {
+                require_once __DIR__ . '/../nodes/calculationnode.php';
+                $workflowNode = new CalculationNode($nodeId, $nodeType);
+            } elseif ($nodeType === 'if') {
+                require_once __DIR__ . '/../nodes/ifnode.php';
+                $workflowNode = new IfNode($nodeId, $nodeType);
+            } elseif ($nodeType === 'llm') {
+                require_once __DIR__ . '/../nodes/llmnode.php';
+                $workflowNode = new LLMNode($nodeId, $nodeType);
+            } elseif ($nodeType === 'api') {
+                require_once __DIR__ . '/../nodes/apinode.php';
+                $workflowNode = new APINode($nodeId, $nodeType);
+            } elseif ($nodeType === 'loop') {
+                $workflowNode = new LoopNode($nodeId, $nodeType);
+            } else {
+                $workflowNode = new WorkflowNode($nodeId, $nodeType);
+            }
+            $result = $workflowNode->run(
+                $nodeConfig,
+                $this->globaldata,
+                $this->callbacks,
+                $this->localdata,
+                $this->workflowdata
+            );
 
-      // Modify localdata structure to be node-specific and add loop tracking
-      if (!isset($this->localdata[$nodeId])) {
-        $this->localdata[$nodeId] = ['loop' => 0];
-      } else {
-        $this->localdata[$nodeId]['loop']++;
-        if ($this->localdata[$nodeId]['loop'] >= 100) {
-          throw new Exception("Infinite loop detected at node $nodeId");
+            // Modify localdata structure to be node-specific and add loop tracking
+            if (!isset($this->localdata[$nodeId])) {
+                $this->localdata[$nodeId] = ['loop' => 0];
+            } else {
+                $this->localdata[$nodeId]['loop']++;
+                if ($this->localdata[$nodeId]['loop'] >= 100) {
+                    throw new Exception("Infinite loop detected at node $nodeId");
+                }
+            }
+
+            // Update protected fields with latest data
+            if (isset($result['localdata'])) {
+                $this->localdata[$nodeId] = array_merge($this->localdata[$nodeId], $result['localdata']);
+            }
+            if (isset($result['workflowdata'])) {
+                $this->workflowdata = $result['workflowdata'];
+            }
+
+            // If node signals pause, stop processing
+            if (isset($result['status']) && $result['status'] === 'paused') {
+                $workflowStatus = "paused";
+                break;
+            }
+
+            // If node signals end, stop processing
+            if (isset($result['status']) && $result['status'] === 'end') {
+                $workflowStatus = "done";
+                break;
+            }
+
+            // Determine next nodes to run
+            $nextNodeIds = [];
+            if (!empty($this->localdata[$nodeId]['valid_edges']) && is_array($this->localdata[$nodeId]['valid_edges'])) {
+                $nextNodeIds = $this->localdata[$nodeId]['valid_edges'];
+            } else {
+                $edges = $this->getEdgesFromNode($nodeId);
+                foreach ($edges as $edge) {
+                  if (isset($edge['to_node_id'])) {
+                    $nextNodeIds[] = $edge['to_node_id'];
+                  }
+                }
+            }
+
+            // Add next nodes to run queue
+            foreach ($nextNodeIds as $nextNode) {
+                if (is_array($nextNode)) {
+                    $nextNodeId = $nextNode['to_node_id'] ?? null;
+                } else {
+                    $nextNodeId = $nextNode;
+                }
+                $this->runqueue[] = ['prevnode' => $nodeId, 'nextnode' => $nextNodeId];
+            }
+
+            $microtimeEnd = microtime(true);
+            $executionTimeMs = round(($microtimeEnd - $microtimeStart) * 1000, 3);
+            $this->updateExecutionLog([
+                'node_id' => $nodeId,
+                'node_type' => $nodeType,
+                'prev_node_id' => $prevNodeId,
+                'localdata' => $this->localdata,
+                'workflowdata' => $this->workflowdata,
+                'execution_time_ms' => $executionTimeMs,
+                'started_at' => date('Y-m-d H:i:s', (int) $microtimeStart) . sprintf('.%03d', ($microtimeStart - floor($microtimeStart)) * 1000),
+                'ended_at' => date('Y-m-d H:i:s', (int) $microtimeEnd) . sprintf('.%03d', ($microtimeEnd - floor($microtimeEnd)) * 1000),
+            ]);
         }
-      }
 
-      // Update protected fields with latest data
-      if (isset($result['localdata'])) {
-        $this->localdata[$nodeId] = array_merge($this->localdata[$nodeId], $result['localdata']);
-      }
-      if (isset($result['workflowdata'])) {
-        $this->workflowdata = $result['workflowdata'];
-      }
-
-
-      // If node signals end, stop processing
-      if (isset($result['status']) && $result['status'] === 'end') {
         $workflowStatus = "done";
-        break;
-      }
-
-      // Determine next nodes to run
-      $nextNodeIds = [];
-      if (!empty($this->localdata[$nodeId]['valid_edges']) && is_array($this->localdata[$nodeId]['valid_edges'])) {
-        $nextNodeIds = $this->localdata[$nodeId]['valid_edges'];
-      } else {
-        $edges = $this->getEdgesFromNode($nodeId);
-        foreach ($edges as $edge) {
-          if (isset($edge['to_node_id'])) {
-            $nextNodeIds[] = $edge['to_node_id'];
-          }
-        }
-      }
-
-      // Add next nodes to run queue
-      foreach ($nextNodeIds as $nextNode) {
-        if (is_array($nextNode)) {
-          $nextNodeId = $nextNode['to_node_id'] ?? null;
-        } else {
-          $nextNodeId = $nextNode;
-        }
-        $this->runqueue[] = ['prevnode' => $nodeId, 'nextnode' => $nextNodeId];
-      }
-
-      $microtimeEnd = microtime(true);
-      $executionTimeMs = round(($microtimeEnd - $microtimeStart) * 1000, 3);
-      $this->updateExecutionLog([
-        'node_id' => $nodeId,
-        'node_type' => $nodeType,
-        'prev_node_id' => $prevNodeId,
-        'localdata' => $this->localdata,
-        'workflowdata' => $this->workflowdata,
-        'execution_time_ms' => $executionTimeMs,
-        'started_at' => date('Y-m-d H:i:s', (int) $microtimeStart) . sprintf('.%03d', ($microtimeStart - floor($microtimeStart)) * 1000),
-        'ended_at' => date('Y-m-d H:i:s', (int) $microtimeEnd) . sprintf('.%03d', ($microtimeEnd - floor($microtimeEnd)) * 1000),
-      ]);
+    } catch (Exception $e) {
+        $workflowStatus = "failed";
+        $this->updateExecutionLog([
+            'error' => $e->getMessage(),
+            'workflowdata' => $this->workflowdata,
+        ]);
+        $this->setResult($workflowStatus, ['error' => $e->getMessage()]);
     }
 
-    $this->setResult($workflowStatus = "running");
+    $this->setResult($workflowStatus);
 
     return [
-      'localdata' => $this->localdata,
-      'workflowdata' => $this->workflowdata
+        'localdata' => $this->localdata,
+        'workflowdata' => $this->workflowdata
     ];
   }
 
-  private function setResult($status)
+  public function updateWorkflowData($key, $value)
+  {
+    $this->workflowdata[$key] = $value;
+  }
+
+  private function setResult($status, $data = null)
   {
     $workflowRunId = $this->nodeconfig['workflow_run_id'] ?? null;
+    if (isset($data)) {
+      $this->workflowdata[] = $data;
+    }
     if ($workflowRunId) {
       executeSQL(
         "UPDATE workflow_runs SET status = ?, result = ? WHERE id = ?",
